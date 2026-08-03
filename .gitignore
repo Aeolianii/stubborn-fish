@@ -1,0 +1,13 @@
+node_modules/
+.venv/
+__pycache__/
+dist/
+.env
+data/tmp/
+.docx-review/
+coverage/
+.test-tmp/
+.worktrees/
+*.log
+local-server.pid
+

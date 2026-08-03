@@ -1,0 +1,1015 @@
+/* AI item capture and transparent cutout interface. */
+:root {
+  color: #173640;
+  background: #d9f1f2;
+  font-family:
+    Inter, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  font-synthesis: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html,
+body {
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  min-width: 320px;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at 8% 5%, rgba(255, 255, 255, 0.94), transparent 32%),
+    linear-gradient(145deg, #eefbfa 0%, #cfe9ed 48%, #b8dde4 100%);
+}
+
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  touch-action: manipulation;
+}
+
+.app-shell {
+  width: min(1380px, 100%);
+  min-height: 100vh;
+  margin: 0 auto;
+  padding:
+    max(22px, env(safe-area-inset-top))
+    max(24px, env(safe-area-inset-right))
+    max(20px, env(safe-area-inset-bottom))
+    max(24px, env(safe-area-inset-left));
+}
+
+.app-header,
+.section-heading,
+.input-row,
+.status-row,
+.card-title,
+.compact {
+  display: flex;
+  align-items: center;
+}
+
+.app-header {
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 18px;
+}
+
+.eyebrow,
+.step-label {
+  margin: 0 0 5px;
+  color: #17877f;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  margin-bottom: 8px;
+  color: #102f39;
+  font-size: clamp(28px, 3.4vw, 50px);
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+h2 {
+  margin-bottom: 0;
+  font-size: clamp(19px, 2vw, 25px);
+}
+
+h3 {
+  margin-bottom: 0;
+  font-size: 15px;
+}
+
+.intro {
+  max-width: 720px;
+  margin-bottom: 0;
+  color: #53727a;
+  font-size: 14px;
+}
+
+.model-badge {
+  min-width: 190px;
+  padding: 12px 16px;
+  border: 1px solid rgba(23, 135, 127, 0.2);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.65);
+  box-shadow: 0 14px 34px rgba(48, 104, 110, 0.1);
+}
+
+.model-badge span,
+.model-badge strong {
+  display: block;
+}
+
+.model-badge span {
+  margin-bottom: 4px;
+  color: #6e858a;
+  font-size: 11px;
+}
+
+.control-panel,
+.result-section,
+.aquarium-section {
+  border: 1px solid rgba(24, 88, 94, 0.12);
+  border-radius: 22px;
+  background: rgba(249, 255, 254, 0.82);
+  box-shadow: 0 20px 45px rgba(39, 91, 98, 0.1);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+
+.step-screen {
+  min-height: 0;
+}
+
+.control-panel {
+  padding: 20px;
+}
+
+.section-heading {
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 16px;
+}
+
+.cost-tag {
+  padding: 7px 11px;
+  border-radius: 999px;
+  color: #177970;
+  background: #dff5ef;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.input-row {
+  align-items: stretch;
+  gap: 12px;
+}
+
+.camera-button,
+.primary-button,
+.secondary-button {
+  min-height: 48px;
+  border: 0;
+  border-radius: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.camera-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-width: 150px;
+  overflow: hidden;
+  padding: 0 16px;
+  color: #17635e;
+  background: #def3ef;
+}
+
+.camera-button:focus-within {
+  outline: 3px solid rgba(23, 125, 117, 0.32);
+  outline-offset: 2px;
+}
+
+.native-file-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  opacity: 0;
+}
+
+.camera-mark {
+  position: relative;
+  width: 24px;
+  height: 17px;
+  border: 2px solid currentColor;
+  border-radius: 5px;
+}
+
+.camera-mark::before {
+  position: absolute;
+  top: 3px;
+  left: 7px;
+  width: 6px;
+  height: 6px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  content: "";
+}
+
+.camera-mark::after {
+  position: absolute;
+  top: -6px;
+  left: 4px;
+  width: 8px;
+  height: 4px;
+  border-radius: 3px 3px 0 0;
+  background: currentColor;
+  content: "";
+}
+
+.subject-fields {
+  flex: 1;
+  min-width: 220px;
+  display: grid;
+  gap: 8px;
+}
+
+.description-field,
+.category-field {
+  padding: 8px 12px;
+  border: 1px solid #cce1df;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.description-field span,
+.category-field span {
+  display: block;
+  margin-bottom: 3px;
+  color: #6d8488;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.description-field textarea {
+  display: block;
+  width: 100%;
+  min-height: 38px;
+  padding: 0;
+  resize: none;
+  border: 0;
+  outline: 0;
+  color: #16333a;
+  background: transparent;
+  line-height: 1.45;
+}
+
+.category-field {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  gap: 12px;
+}
+
+.category-field span {
+  min-width: 58px;
+  margin-bottom: 0;
+}
+
+.category-field select {
+  min-width: 0;
+  min-height: 30px;
+  flex: 1;
+  border: 0;
+  outline: 0;
+  color: #16333a;
+  background: transparent;
+}
+
+.category-field select:invalid {
+  color: #83979a;
+}
+
+.category-field:focus-within {
+  border-color: #72b9b3;
+  box-shadow: 0 0 0 3px rgba(23, 125, 117, 0.12);
+}
+
+.primary-button {
+  min-width: 178px;
+  padding: 0 18px;
+  color: #fff;
+  background: linear-gradient(135deg, #177d75, #0e5d68);
+  box-shadow: 0 12px 24px rgba(19, 105, 103, 0.22);
+}
+
+.primary-button:disabled,
+.secondary-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.44;
+  box-shadow: none;
+}
+
+.status-row {
+  gap: 9px;
+  min-height: 34px;
+  padding-top: 12px;
+}
+
+.status-row p {
+  margin-bottom: 0;
+  color: #597277;
+  font-size: 13px;
+}
+
+.status-dot {
+  width: 9px;
+  height: 9px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #9cafb1;
+}
+
+.status-dot.working {
+  background: #f0a72f;
+  box-shadow: 0 0 0 5px rgba(240, 167, 47, 0.15);
+}
+
+.status-dot.success {
+  background: #20a075;
+}
+
+.status-dot.error {
+  background: #d75959;
+}
+
+.text-button {
+  margin-left: auto;
+  padding: 5px 9px;
+  border: 0;
+  color: #a44c4c;
+  background: transparent;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.result-section {
+  margin-top: 16px;
+  padding: 20px;
+}
+
+.secondary-button {
+  padding: 0 17px;
+  color: #145f5a;
+  background: #dff4ef;
+}
+
+.generating-state {
+  display: flex;
+  min-height: 250px;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  border-radius: 17px;
+  color: #1a5658;
+  background:
+    radial-gradient(circle at center, rgba(255, 255, 255, 0.9), transparent 64%),
+    linear-gradient(135deg, #dff7f1, #c8e9ed);
+  text-align: left;
+}
+
+.generating-state h3 {
+  margin-bottom: 7px;
+  font-size: clamp(18px, 2.3vw, 27px);
+}
+
+.generating-state p {
+  margin-bottom: 0;
+  color: #5e7e81;
+  font-size: 13px;
+}
+
+.ai-loader {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  flex: 0 0 auto;
+}
+
+.ai-loader span {
+  position: absolute;
+  inset: 0;
+  border: 4px solid transparent;
+  border-top-color: #1d9487;
+  border-radius: 50%;
+  animation: ai-orbit 1.4s linear infinite;
+}
+
+.ai-loader span:nth-child(2) {
+  inset: 10px;
+  border-top-color: #57bdaf;
+  animation-duration: 1.05s;
+  animation-direction: reverse;
+}
+
+.ai-loader span:nth-child(3) {
+  inset: 23px;
+  border: 0;
+  background: #1d9487;
+  animation: ai-pulse 0.9s ease-in-out infinite alternate;
+}
+
+.generation-status {
+  padding: 10px 2px 0;
+}
+
+.step-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 12px;
+}
+
+.step-actions .primary-button,
+.step-actions .secondary-button {
+  min-height: 46px;
+}
+
+@keyframes ai-orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes ai-pulse {
+  to {
+    transform: scale(0.72);
+    opacity: 0.48;
+  }
+}
+
+.comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.preview-card {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #dbe9e8;
+  border-radius: 17px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.card-title {
+  gap: 8px;
+  margin-bottom: 9px;
+}
+
+.card-title span {
+  color: #2b9c8d;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.media-stage {
+  position: relative;
+  display: grid;
+  width: 100%;
+  min-height: 190px;
+  overflow: hidden;
+  place-items: center;
+  border-radius: 12px;
+  background: #e9f1f1;
+}
+
+.media-stage img,
+.media-stage canvas {
+  display: block;
+  max-width: 100%;
+  max-height: 220px;
+  object-fit: contain;
+}
+
+.media-stage p {
+  margin: 0;
+  padding: 20px;
+  color: #829597;
+  font-size: 12px;
+  text-align: center;
+}
+
+.checker-stage {
+  background-color: #eef3f3;
+  background-image:
+    linear-gradient(45deg, #d8e2e2 25%, transparent 25%),
+    linear-gradient(-45deg, #d8e2e2 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #d8e2e2 75%),
+    linear-gradient(-45deg, transparent 75%, #d8e2e2 75%);
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+  background-size: 16px 16px;
+}
+
+.aquarium-section {
+  margin-top: 16px;
+  padding: 16px 20px 20px;
+}
+
+.compact {
+  margin-bottom: 10px;
+}
+
+.compact > p {
+  margin: 0;
+  color: #6a8186;
+  font-size: 12px;
+}
+
+#aquarium-canvas {
+  display: block;
+  width: 100%;
+  height: min(25vh, 220px);
+  min-height: 150px;
+  border-radius: 15px;
+  background: #8dd9df;
+}
+
+@media (max-width: 820px) {
+  .app-shell {
+    padding: 16px;
+  }
+
+  .app-header {
+    align-items: flex-start;
+  }
+
+  .input-row {
+    flex-wrap: wrap;
+  }
+
+  .subject-fields {
+    order: 3;
+    flex-basis: 100%;
+  }
+
+  .camera-button,
+  .primary-button {
+    flex: 1;
+  }
+
+  .media-stage {
+    min-height: 150px;
+  }
+}
+
+@media (max-width: 620px) {
+  .app-header,
+  .section-heading {
+    align-items: flex-start;
+  }
+
+  .model-badge {
+    min-width: 160px;
+  }
+
+  .comparison-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .compact > p {
+    display: none;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 600px) and (min-width: 560px) {
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .app-shell {
+    display: flex;
+    width: 100%;
+    height: 100dvh;
+    min-height: 0;
+    flex-direction: column;
+    padding:
+      max(8px, env(safe-area-inset-top))
+      max(12px, env(safe-area-inset-right))
+      max(8px, env(safe-area-inset-bottom))
+      max(12px, env(safe-area-inset-left));
+  }
+
+  .app-header {
+    min-height: 48px;
+    flex: 0 0 auto;
+    gap: 12px;
+    margin-bottom: 7px;
+  }
+
+  .eyebrow {
+    margin-bottom: 2px;
+    font-size: 10px;
+  }
+
+  h1 {
+    margin-bottom: 3px;
+    font-size: clamp(22px, 6.4vh, 30px);
+  }
+
+  h2 {
+    font-size: clamp(16px, 4.4vh, 21px);
+  }
+
+  .intro {
+    max-width: none;
+    overflow: hidden;
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .model-badge {
+    min-width: 150px;
+    padding: 7px 11px;
+    border-radius: 12px;
+  }
+
+  .model-badge span {
+    margin-bottom: 1px;
+    font-size: 10px;
+  }
+
+  .model-badge strong {
+    font-size: 13px;
+  }
+
+  .step-screen:not([hidden]) {
+    display: flex;
+    min-height: 0;
+    flex: 1 1 auto;
+    flex-direction: column;
+    margin-top: 0;
+    overflow: hidden;
+  }
+
+  .control-panel,
+  .result-section,
+  .aquarium-section {
+    padding: 10px 12px;
+    border-radius: 17px;
+  }
+
+  .section-heading {
+    flex: 0 0 auto;
+    gap: 10px;
+    margin-bottom: 7px;
+  }
+
+  .step-label {
+    margin-bottom: 2px;
+    font-size: 11px;
+  }
+
+  .cost-tag {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+
+  .input-row {
+    min-height: 0;
+    align-items: center;
+    flex: 1 1 auto;
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+
+  .input-row > .camera-button,
+  .input-row > .primary-button {
+    height: 48px;
+    min-height: 48px;
+    flex: 0 0 auto;
+    align-self: center;
+    font-size: 14px;
+  }
+
+  .input-row > .camera-button {
+    width: 154px;
+    min-width: 154px;
+    gap: 7px;
+    padding: 0 8px;
+  }
+
+  .input-row > .primary-button {
+    width: 166px;
+    min-width: 166px;
+  }
+
+  .subject-fields {
+    min-width: 0;
+    flex-basis: auto;
+    order: initial;
+  }
+
+  .description-field,
+  .category-field {
+    padding: 5px 9px;
+    border-radius: 11px;
+  }
+
+  .description-field span,
+  .category-field span {
+    font-size: 12px;
+  }
+
+  .description-field textarea {
+    min-height: 30px;
+    font-size: 15px;
+  }
+
+  .category-field {
+    min-height: 38px;
+  }
+
+  .category-field select {
+    font-size: 15px;
+  }
+
+  .status-row {
+    min-height: 26px;
+    flex: 0 0 auto;
+    padding-top: 7px;
+  }
+
+  .status-row p {
+    overflow: hidden;
+    font-size: 13px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .text-button {
+    padding: 5px 7px;
+    font-size: 13px;
+  }
+
+  .generating-state {
+    min-height: 0;
+    flex: 1 1 auto;
+    gap: 16px;
+  }
+
+  .ai-loader {
+    width: 58px;
+    height: 58px;
+  }
+
+  .ai-loader span:nth-child(3) {
+    inset: 18px;
+  }
+
+  .generating-state h3 {
+    margin-bottom: 4px;
+    font-size: 18px;
+  }
+
+  .generating-state p {
+    font-size: 13px;
+  }
+
+  .generation-status {
+    padding-top: 6px;
+  }
+
+  .comparison-grid {
+    min-height: 0;
+    flex: 1 1 auto;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .preview-card {
+    display: flex;
+    min-height: 0;
+    flex-direction: column;
+    padding: 7px;
+    border-radius: 12px;
+  }
+
+  .card-title {
+    flex: 0 0 auto;
+    margin-bottom: 5px;
+  }
+
+  .media-stage {
+    min-height: 0;
+    flex: 1 1 auto;
+  }
+
+  .media-stage img,
+  .media-stage canvas {
+    max-height: 100%;
+  }
+
+  .step-actions {
+    flex: 0 0 auto;
+    padding-top: 7px;
+  }
+
+  .step-actions .primary-button,
+  .step-actions .secondary-button,
+  .aquarium-section .secondary-button {
+    height: 46px;
+    min-height: 46px;
+    flex: 0 0 auto;
+    font-size: 14px;
+  }
+
+  .step-actions .primary-button {
+    width: clamp(190px, 28vw, 240px);
+    min-width: 0;
+  }
+
+  .step-actions .secondary-button {
+    min-width: 120px;
+  }
+
+  .aquarium-section .secondary-button {
+    min-width: 116px;
+  }
+
+  .aquarium-section .section-heading {
+    margin-bottom: 7px;
+  }
+
+  #aquarium-canvas {
+    height: auto;
+    min-height: 0;
+    flex: 1 1 auto;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 450px) and (min-width: 560px) {
+  .app-shell {
+    padding:
+      max(6px, env(safe-area-inset-top))
+      max(10px, env(safe-area-inset-right))
+      max(6px, env(safe-area-inset-bottom))
+      max(10px, env(safe-area-inset-left));
+  }
+
+  .app-header {
+    min-height: 42px;
+    margin-bottom: 5px;
+  }
+
+  h1 {
+    margin-bottom: 2px;
+    font-size: clamp(20px, 6.2vh, 25px);
+  }
+
+  h2 {
+    font-size: clamp(16px, 4.4vh, 19px);
+  }
+
+  .intro {
+    font-size: 11px;
+  }
+
+  .model-badge {
+    min-width: 140px;
+    padding: 5px 9px;
+  }
+
+  .control-panel,
+  .result-section,
+  .aquarium-section {
+    padding: 8px 10px;
+    border-radius: 15px;
+  }
+
+  .section-heading {
+    margin-bottom: 5px;
+  }
+
+  .step-label {
+    font-size: 10px;
+  }
+
+  .cost-tag {
+    padding: 4px 7px;
+    font-size: 10px;
+  }
+
+  .input-row {
+    gap: 7px;
+  }
+
+  .input-row > .camera-button,
+  .input-row > .primary-button {
+    height: 44px;
+    min-height: 44px;
+    font-size: 13px;
+  }
+
+  .input-row > .camera-button {
+    width: 144px;
+    min-width: 144px;
+  }
+
+  .input-row > .primary-button {
+    width: 152px;
+    min-width: 152px;
+  }
+
+  .subject-fields {
+    gap: 6px;
+  }
+
+  .description-field,
+  .category-field {
+    padding: 4px 8px;
+  }
+
+  .description-field span,
+  .category-field span {
+    font-size: 11px;
+  }
+
+  .description-field textarea {
+    min-height: 26px;
+    font-size: 14px;
+  }
+
+  .category-field,
+  .category-field select {
+    min-height: 34px;
+    font-size: 14px;
+  }
+
+  .status-row {
+    min-height: 24px;
+    padding-top: 5px;
+  }
+
+  .status-row p,
+  .generating-state p,
+  .text-button {
+    font-size: 12px;
+  }
+
+  .generating-state {
+    gap: 13px;
+  }
+
+  .generating-state h3 {
+    font-size: 17px;
+  }
+
+  .ai-loader {
+    width: 50px;
+    height: 50px;
+  }
+
+  .ai-loader span:nth-child(3) {
+    inset: 15px;
+  }
+
+  .step-actions {
+    padding-top: 5px;
+  }
+
+  .step-actions .primary-button,
+  .step-actions .secondary-button,
+  .aquarium-section .secondary-button {
+    height: 44px;
+    min-height: 44px;
+    font-size: 13px;
+  }
+
+  .step-actions .primary-button {
+    width: clamp(180px, 27vw, 220px);
+  }
+
+  .step-actions .secondary-button {
+    min-width: 112px;
+  }
+
+  .aquarium-section .secondary-button {
+    min-width: 108px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ai-loader span {
+    animation-duration: 2.8s;
+  }
+}

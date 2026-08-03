@@ -1,0 +1,6 @@
+Upbeat Loop
+Author: BenjaTheMaker
+Source: https://opengameart.org/content/upbeat-short-music-loop-vorbis-oog
+License: Creative Commons Zero (CC0)
+
+The source OGG was converted to MP3 for broader mobile WebView compatibility.

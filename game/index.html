@@ -1,0 +1,574 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <meta name="theme-color" content="#081a24">
+  <link rel="icon" href="/game/assets/ui/fish-fallback.svg" type="image/svg+xml">
+  <title>忍不住化身一条固执的鱼</title>
+  <link rel="stylesheet" href="/game/styles.css">
+</head>
+<body>
+  <main id="app" aria-label="桌面水族箱">
+    <canvas id="tank" aria-label="可互动的水族箱画面"></canvas>
+
+    <section class="rotate-hint" aria-label="横屏提示">
+      <div class="phone-rotate" aria-hidden="true"></div>
+      <strong>请把手机横过来</strong>
+      <span>这只鱼缸更适合横着看</span>
+    </section>
+
+    <section id="entryScreen" class="entry-screen is-hidden" aria-hidden="true">
+      <div class="entry-glow" aria-hidden="true"></div>
+      <div class="entry-card">
+        <img
+          class="entry-title-wordmark"
+          src="/game/assets/ui/refined/title-wordmark-anime.png"
+          alt="忍不住化身一条固执的鱼"
+        >
+        <span class="eyebrow">MEMORY AQUARIUM</span>
+        <h2>有一条鱼，已经等你很久了</h2>
+        <p>把鱼、装饰和现实里的小东西放进水里，它们会在你离开时继续生活。</p>
+        <button id="enterTankButton" class="entry-button" type="button">进入鱼缸</button>
+      </div>
+    </section>
+
+    <header class="topbar">
+      <div class="brand">
+        <img
+          class="brand-wordmark"
+          src="/game/assets/ui/refined/title-wordmark-anime.png"
+          alt=""
+          aria-hidden="true"
+        >
+        <h1 class="visually-hidden">忍不住化身一条固执的鱼</h1>
+        <small>MEMORY AQUARIUM</small>
+      </div>
+      <div class="topbar-actions">
+        <div id="resourcePill" class="resource-pill" aria-label="当前藻币和挂机收益">
+          <img class="resource-icon" src="/game/assets/algae-coin-icon.png?v=2" alt="" aria-hidden="true">
+          <strong id="feedBalance">200</strong>
+        </div>
+        <button id="shopButton" class="shop-button" type="button" aria-label="打开商店">
+          <img class="shop-icon" src="/game/assets/shop-icon.png?v=2" alt="" aria-hidden="true">
+          <strong>商店</strong>
+        </button>
+        <button id="backgroundButton" class="icon-button" type="button" aria-label="切换鱼缸背景" title="切换背景">
+          <img class="scenery-icon" src="/game/assets/scenery-icon.png?v=2" alt="" aria-hidden="true">
+        </button>
+        <button id="soundButton" class="icon-button" type="button" aria-label="切换声音">
+          <svg class="topbar-svg-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M5.5 14.5v-5l9-2.2v5"></path>
+            <circle cx="5.5" cy="16.5" r="2.5"></circle>
+            <circle cx="14.5" cy="14.3" r="2.5"></circle>
+            <path d="M14.5 7.3V4.8c2.4.3 4 1.6 4.8 3.6"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <section id="storyCard" class="story-card is-hidden" aria-live="polite">
+      <span class="story-dot"></span>
+      <p id="storyText"></p>
+    </section>
+
+    <section id="catchHud" class="catch-hud is-hidden" aria-label="捕鱼计分板">
+      <div class="catch-stat">
+        <small>得分</small>
+        <strong id="catchScore">0</strong>
+      </div>
+      <div class="catch-timer" aria-live="polite">
+        <small>剩余时间</small>
+        <strong id="catchTimer">60</strong>
+      </div>
+      <div class="catch-stat">
+        <small>已捞目标</small>
+        <strong><span id="catchCount">0</span>/<span id="catchTargetTotal">3</span></strong>
+      </div>
+      <button id="catchMusicButton" class="catch-music" type="button" aria-label="关闭捕鱼配乐">♪</button>
+      <button id="quitCatchButton" class="catch-quit" type="button">结束</button>
+    </section>
+
+    <div id="catchFeedback" class="catch-feedback is-hidden" aria-live="polite"></div>
+    <div id="catchScoreFlash" class="catch-score-flash is-hidden" aria-live="polite">
+      <strong id="catchScoreFlashValue">＋10</strong>
+      <span id="catchScoreFlashLabel">抓到目标鱼</span>
+    </div>
+
+    <section id="catchPanel" class="catch-panel is-hidden" role="dialog" aria-modal="true" aria-labelledby="catchPanelTitle">
+      <button id="catchPanelBackdrop" class="catch-panel-backdrop" type="button" aria-label="关闭捕鱼玩法"></button>
+      <article class="catch-card">
+        <button id="catchPanelCloseButton" class="catch-card-close" type="button" aria-label="关闭捕鱼玩法">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m7 7 10 10M17 7 7 17"></path>
+          </svg>
+        </button>
+        <div id="catchOutcome" class="catch-outcome is-hidden" aria-live="polite">
+          <small id="catchOutcomeKicker">本局回声</small>
+          <strong id="catchOutcomeMark">差一点点</strong>
+        </div>
+        <span class="catch-card-kicker">一分钟水下挑战</span>
+        <h2 id="catchPanelTitle">捞走那条固执的鱼</h2>
+        <p id="catchPanelDescription">
+          左右拖动夹子瞄准，松手下爪。目标鱼会在夹子靠近时躲进水草或石头一秒。
+        </p>
+        <section id="catchTargetSection" class="catch-target-section" aria-labelledby="catchTargetTitle">
+          <div class="catch-target-heading">
+            <strong id="catchTargetTitle">选出这轮要捞的鱼</strong>
+            <span id="catchTargetSelectionCount">0 / 3</span>
+          </div>
+          <div id="catchTargetPicker" class="catch-target-picker"></div>
+          <p id="catchTargetHint" class="catch-target-hint">
+            点选 1–3 条；没有被选中的鱼会成为无辜鱼。
+          </p>
+        </section>
+        <div class="catch-rules" aria-label="计分规则">
+          <span><b>＋10</b> 目标鱼</span>
+          <span><b>－5</b> 无辜的鱼</span>
+          <span><b>60秒</b> 一局</span>
+        </div>
+        <div id="catchResult" class="catch-result is-hidden">
+          <div><small>本局得分</small><strong id="catchFinalScore">0</strong></div>
+          <div><small>捞到目标</small><strong id="catchFinalTargets">0</strong></div>
+          <div><small>误捞小鱼</small><strong id="catchFinalNpcs">0</strong></div>
+        </div>
+        <div class="catch-card-actions">
+          <button id="closeCatchPanelButton" class="secondary-button" type="button">先不玩</button>
+          <button id="startCatchButton" class="confirm-button" type="button">开始 60 秒</button>
+        </div>
+      </article>
+    </section>
+
+    <section id="objectEditor" class="object-editor is-hidden" aria-label="物品编辑工具">
+      <div class="editor-row">
+        <button class="state-chip" data-state="bottom" type="button">沉底</button>
+        <button class="state-chip" data-state="suspended" type="button">悬浮</button>
+        <button class="state-chip" data-state="surface" type="button">漂浮</button>
+      </div>
+      <label class="scale-control">
+        <span>大小</span>
+        <input id="scaleRange" type="range" min="0.55" max="1.65" step="0.05" value="1">
+        <input id="objectScaleRange" class="visually-hidden" type="range" min="0.55" max="1.65" step="0.05" value="1" tabindex="-1" aria-hidden="true">
+      </label>
+      <span id="objectRuleHint" class="object-rule-hint">可切换状态</span>
+      <button id="deleteObjectButton" class="delete-button" type="button">删除</button>
+      <button id="finishEditButton" class="finish-button" type="button" aria-label="完成物品调整" title="完成">✓</button>
+    </section>
+
+    <section id="fishEditor" class="fish-editor is-hidden" aria-label="鱼只编辑工具">
+      <div class="fish-editor-copy">
+        <strong id="selectedFishName">小金</strong>
+        <small id="fishAffectionStatus">亲密度 0/100 · 故事 0/2</small>
+      </div>
+      <label class="fish-scale-control">
+        <span>体型</span>
+        <input id="fishScaleRange" type="range" min="0.075" max="0.17" step="0.005" value="0.11">
+      </label>
+      <button id="maturityChoiceButton" class="editor-action-button is-hidden" type="button">选择去向</button>
+      <button id="startJourneyButton" class="editor-action-button is-hidden" type="button">开始远游</button>
+      <button id="deleteFishButton" class="delete-button" type="button">删除</button>
+      <button id="finishFishEditButton" class="finish-button" type="button" aria-label="完成鱼只调整" title="完成">✓</button>
+    </section>
+
+    <section id="decorEditor" class="decor-editor is-hidden" aria-label="鱼缸布景编辑工具">
+      <div class="fish-editor-copy">
+        <strong id="selectedDecorName">水草</strong>
+      </div>
+      <label class="fish-scale-control">
+        <span>大小</span>
+        <input id="decorScaleRange" type="range" min="0.6" max="1.6" step="0.05" value="1">
+      </label>
+      <button id="deleteDecorButton" class="delete-button" type="button" aria-label="删除布景" title="删除">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 7h16M9 7V4h6v3m3 0-1 13H7L6 7m4 4v5m4-5v5"></path>
+        </svg>
+      </button>
+      <button id="finishDecorEditButton" class="finish-button" type="button" aria-label="完成布景调整" title="完成">✓</button>
+    </section>
+
+    <nav id="dock" class="dock" aria-label="水族箱操作">
+      <button id="feedButton" class="dock-button" type="button">
+        <span class="dock-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M7 8.2h10l-1 10H8l-1-10Z"></path>
+            <path d="M9 8.2V5.7h6v2.5"></path>
+            <circle cx="10" cy="12" r=".8"></circle>
+            <circle cx="14.2" cy="14.5" r=".8"></circle>
+          </svg>
+        </span>
+        <span>投喂 <small id="dockFeedBalance">200</small></span>
+      </button>
+      <button id="addButton" class="dock-button dock-button-primary" type="button">
+        <span class="dock-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="8.5"></circle>
+            <path d="M12 8v8M8 12h8"></path>
+          </svg>
+        </span>
+        <span>放入 <small id="dockCapacityStatus">1/3</small></span>
+      </button>
+      <button id="catchButton" class="dock-button" type="button">
+        <span class="dock-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 3v5"></path>
+            <path d="M6.5 8.5 8 17h8l1.5-8.5"></path>
+            <path d="M6.5 8.5c3 2 8 2 11 0"></path>
+          </svg>
+        </span>
+        <span>捞鱼</span>
+      </button>
+      <button id="viewButton" class="dock-button" type="button">
+        <span class="dock-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M3.5 12s3.2-5 8.5-5 8.5 5 8.5 5-3.2 5-8.5 5-8.5-5-8.5-5Z"></path>
+            <circle cx="12" cy="12" r="2.5"></circle>
+          </svg>
+        </span>
+        <span>观赏</span>
+      </button>
+    </nav>
+
+    <div id="viewingActions" class="viewing-actions is-hidden">
+      <button id="posterButton" class="viewing-button" type="button">生成海报</button>
+      <button id="exitViewButton" class="exit-view" type="button">轻触返回</button>
+    </div>
+
+    <section id="addSheet" class="sheet is-hidden" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+      <button class="sheet-backdrop" data-close-sheet type="button" aria-label="关闭"></button>
+      <div class="sheet-panel">
+        <div class="sheet-handle"></div>
+        <div class="sheet-heading">
+          <div>
+            <h2 id="sheetTitle">放进鱼缸</h2>
+          </div>
+          <button class="close-button" data-close-sheet type="button" aria-label="关闭">×</button>
+        </div>
+
+        <div class="sheet-view" data-cutout-view="capture" data-add-source="album">
+          <nav class="add-source-switch" aria-label="选择放入方式">
+            <button class="is-active" data-add-source="album" type="button">从相册制作</button>
+            <button data-add-source="collection" type="button">已有收藏</button>
+          </nav>
+
+          <section class="default-library" aria-labelledby="defaultLibraryTitle">
+            <div class="default-library-heading">
+              <strong id="defaultLibraryTitle">点一下，直接放进鱼缸</strong>
+            </div>
+            <div id="defaultCatalog" class="default-catalog"></div>
+          </section>
+
+          <div class="capture-layout">
+            <div class="capture-media-column">
+              <button id="imagePicker" class="image-picker" type="button">
+                <img id="imagePreview" class="is-hidden" alt="所选物品预览">
+                <span id="pickerEmpty">
+                  <strong>选择一张照片</strong>
+                  <small>把喜欢的东西带进鱼缸</small>
+                </span>
+                <span id="replaceImageHint" class="replace-image-hint is-hidden">
+                  换一张
+                </span>
+              </button>
+              <input
+                id="fileInput"
+                class="visually-hidden"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+              >
+            </div>
+
+            <div class="capture-form-column">
+              <label class="field target-field">
+                <span>想留下什么？（选填）</span>
+                <textarea
+                  id="subjectDescription"
+                  maxlength="400"
+                  rows="2"
+                  placeholder="例如：保留蓝色尾鳍、左侧白色斑点和歪头姿势"
+                ></textarea>
+              </label>
+
+              <div class="compact-fields">
+                <label class="field">
+                  <span>它是什么</span>
+                  <select id="subjectType">
+                    <option value="" selected disabled>请选择种类</option>
+                    <option value="person">人类</option>
+                    <option value="aquatic_animal">鱼／水生动物</option>
+                    <option value="land_animal">非水生动物</option>
+                    <option value="plant">植物</option>
+                    <option value="other">其他</option>
+                  </select>
+                </label>
+
+                <label class="field">
+                  <span>名字（选填）</span>
+                  <input
+                    id="objectName"
+                    type="text"
+                    maxlength="18"
+                    placeholder="例如：小红"
+                  >
+                </label>
+              </div>
+
+              <details class="memory-details">
+                <summary>补充时间和地点</summary>
+                <div class="compact-fields optional-memory-fields">
+                  <label class="field">
+                    <span>时间</span>
+                    <input id="capturedAtInput" type="text" maxlength="24" placeholder="例如：2026年7月">
+                  </label>
+                  <label class="field">
+                    <span>地点</span>
+                    <input id="capturedPlaceInput" type="text" maxlength="24" placeholder="例如：杭州">
+                  </label>
+                </div>
+              </details>
+
+              <fieldset class="choice-group">
+                <legend>它会怎样留在水里？</legend>
+                <div class="choice-grid">
+                  <button class="choice is-selected" data-new-state="fish" type="button">
+                    <strong>化作小鱼</strong>
+                  </button>
+                  <button class="choice" data-new-state="bottom" type="button">
+                    <strong>沉在水底</strong>
+                  </button>
+                  <button class="choice" data-new-state="suspended" type="button">
+                    <strong>轻轻悬浮</strong>
+                  </button>
+                  <button class="choice" data-new-state="surface" type="button">
+                    <strong>漂在水面</strong>
+                  </button>
+                </div>
+              </fieldset>
+
+              <button
+                id="generateCutoutButton"
+                class="confirm-button"
+                type="button"
+                disabled
+              >
+                <span>生成透明物品</span>
+                <span aria-hidden="true">→</span>
+              </button>
+              <p id="captureStatus" class="sheet-status" aria-live="polite">
+                先拍摄或选择一张图片吧。
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="sheet-view result-view is-hidden" data-cutout-view="result">
+          <div id="processingState" class="processing-state" role="status">
+            <div class="ai-loader" aria-hidden="true">
+              <span></span><span></span><span></span>
+            </div>
+            <div>
+              <strong>AI 正在制作透明物品</strong>
+              <small>正在拆解主体细节，再重绘透明物品…</small>
+            </div>
+          </div>
+
+          <div id="resultContent" class="result-content is-hidden">
+            <div class="comparison-grid">
+              <article class="preview-card">
+                <span class="preview-label">原始照片</span>
+                <div class="preview-stage">
+                  <img id="sourcePreview" alt="用户选择的原始照片">
+                </div>
+              </article>
+              <article class="preview-card">
+                <span class="preview-label">透明物品</span>
+                <div class="preview-stage checker-stage">
+                  <canvas id="cutoutResult" aria-label="透明抠图结果"></canvas>
+                </div>
+              </article>
+            </div>
+            <p id="resultSummary" class="result-summary"></p>
+          </div>
+
+          <div id="resultError" class="result-error is-hidden" role="alert"></div>
+
+          <div class="result-actions">
+            <button id="backToCaptureButton" class="secondary-button" type="button">
+              返回修改
+            </button>
+            <button id="cancelCutoutButton" class="secondary-button" type="button">
+              取消处理
+            </button>
+            <button
+              id="confirmAddButton"
+              class="confirm-button"
+              type="button"
+              disabled
+            >
+              <span>确认放入鱼缸</span>
+              <span aria-hidden="true">→</span>
+            </button>
+          </div>
+          <p id="sheetStatus" class="sheet-status" aria-live="polite"></p>
+        </div>
+      </div>
+    </section>
+
+    <div id="offlineFeedToast" class="offline-feed-toast is-hidden" role="status" aria-live="polite"></div>
+    <div id="offlineBubbleLayer" class="offline-bubble-layer" aria-label="离线关系事件"></div>
+
+    <section id="shopSheet" class="ui-sheet is-hidden" role="dialog" aria-modal="true" aria-labelledby="shopTitle">
+      <button class="ui-sheet-backdrop" data-ui-close="shopSheet" data-close-shop type="button" aria-label="关闭商店"></button>
+      <article class="ui-card shop-card">
+        <header class="ui-card-header shop-card-header">
+          <div class="shop-card-header__copy">
+            <h2 id="shopTitle">水下杂货铺</h2>
+            <small id="shopIncomeHint">鱼越多、亲密度越高，藻币赚得越多</small>
+          </div>
+          <div class="shop-card-header__actions">
+            <div class="shop-currency-pill" aria-label="当前藻币">
+              <img class="shop-currency-pill__icon" src="/game/assets/algae-coin-icon.png?v=2" alt="" aria-hidden="true">
+              <span class="shop-currency-pill__label">藻币</span>
+              <strong id="shopFeedBalance">200</strong>
+            </div>
+            <button id="shopCloseButton" class="close-button" data-close-shop type="button" aria-label="关闭商店">×</button>
+          </div>
+        </header>
+        <div class="shop-tabs" role="tablist" aria-label="商店分类">
+          <button id="shopTabDecorButton" class="shop-tab is-active" data-shop-tab="decor" type="button" role="tab" aria-controls="shopDecorPanel" aria-selected="true">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 18c4-1 4-7 8-9 2-1 4 0 5-3M8 18c2-3 5-3 8-1M9 13l-3-2M13 10l-1-4"></path></svg>
+            <b>装饰</b>
+          </button>
+          <button id="shopTabFishButton" class="shop-tab" data-shop-tab="fish" type="button" role="tab" aria-controls="shopFishPanel" aria-selected="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12c2.8-4 7.2-5.2 11-2.5L20 6v12l-5-3.5C11.2 17.2 6.8 16 4 12Z"></path><circle cx="12.5" cy="11" r=".8"></circle></svg>
+            <b>鱼类</b>
+          </button>
+          <button id="shopTabCapacityButton" class="shop-tab" data-shop-tab="capacity" type="button" role="tab" aria-controls="shopCapacityPanel" aria-selected="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8V5h3M16 5h3v3M19 16v3h-3M8 19H5v-3M12 8v8M8 12h8"></path></svg>
+            <b>扩容</b>
+          </button>
+        </div>
+        <div id="shopDecorPanel" class="shop-panel" role="tabpanel"></div>
+        <div id="shopFishPanel" class="shop-panel is-hidden" role="tabpanel"></div>
+        <div id="shopCapacityPanel" class="shop-panel capacity-panel is-hidden" role="tabpanel">
+          <div>
+            <strong id="shopCapacityStatus">当前 1/3 · 下一档 5</strong>
+            <p>升级后可以放入更多来自现实世界的物品。</p>
+          </div>
+          <button id="shopCapacityButton" class="confirm-button" type="button">60 藻币升级</button>
+        </div>
+      </article>
+    </section>
+
+    <section id="maturityChoiceSheet" class="decision-screen is-hidden" role="dialog" aria-modal="true" aria-labelledby="maturityTitle">
+      <div class="decision-backdrop"></div>
+      <article class="decision-card">
+        <div class="decision-water-scene" aria-hidden="true">
+          <span class="decision-moon"></span>
+          <span class="decision-ripple decision-ripple-one"></span>
+          <span class="decision-ripple decision-ripple-two"></span>
+          <canvas id="maturityFishImage" class="decision-fish-image" width="360" height="200" role="img" aria-label="当前成熟的鱼"></canvas>
+        </div>
+        <div class="decision-copy">
+          <h2 id="maturityTitle"><span id="maturityFishName">月白</span>，要去远方吗？</h2>
+        </div>
+        <div class="decision-actions">
+          <button id="stayButton" class="maturity-choice-button stay-choice" type="button">
+            <span class="choice-copy">
+              <strong>留下</strong>
+              <small>保留收益，占用鱼位</small>
+            </span>
+          </button>
+          <button id="journeyButton" class="maturity-choice-button journey-choice" type="button">
+            <span class="choice-copy">
+              <strong>远游</strong>
+              <small>腾出鱼位，记忆保留</small>
+            </span>
+          </button>
+        </div>
+      </article>
+    </section>
+
+    <section id="offlineEventSheet" class="ui-sheet event-modal is-hidden" role="dialog" aria-modal="true" aria-labelledby="offlineEventTitle">
+      <article class="event-modal-card">
+        <button id="eventBackButton" class="event-modal-close" type="button" aria-label="关闭事件卡">×</button>
+        <div class="event-modal-visual">
+          <img id="eventModalImage" alt="事件发生时的鱼缸画面">
+          <div id="eventModalFocus" class="event-modal-focus" aria-hidden="true"></div>
+        </div>
+        <div class="event-modal-content">
+          <span id="eventModalStatus" class="event-modal-status">正在记录这段故事…</span>
+          <div id="eventModalParticipants" class="event-modal-participants" aria-label="事件参与者"></div>
+          <h2 id="offlineEventTitle">鱼缸里发生了一件小事</h2>
+          <p id="offlineEventBody">它们共同经历了一件很小、很安静的事。</p>
+          <section id="eventChoiceSection" class="event-choice-section" aria-label="事件选择">
+            <span class="event-choice-label">你想怎么回应？</span>
+            <div id="eventChoiceButtons" class="event-choice-buttons"></div>
+          </section>
+          <section id="eventOutcomeSection" class="event-outcome-section is-hidden" aria-live="polite">
+            <span class="event-choice-label">事件结局</span>
+            <p id="eventOutcomeText"></p>
+            <small id="eventOutcomeReward"></small>
+          </section>
+          <blockquote id="eventModalPosterLine"></blockquote>
+          <div class="event-modal-actions">
+            <button class="secondary-button" data-ui-close="offlineEventSheet" type="button">返回鱼缸</button>
+            <button id="forwardEventButton" class="confirm-button" type="button">转发事件</button>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section id="posterSheet" class="ui-sheet is-hidden" role="dialog" aria-modal="true" aria-labelledby="posterTitle">
+      <button class="ui-sheet-backdrop" data-ui-close="posterSheet" type="button" aria-label="关闭海报预览"></button>
+      <article class="ui-card poster-card">
+        <div class="poster-preview-wrap">
+          <img id="posterPreview" alt="生态鱼缸纪念海报预览">
+        </div>
+        <div class="poster-copy">
+          <h2 id="posterTitle">把今天的水光留下来</h2>
+          <p id="posterStatus">生成后可以保存；若相册能力不可用，可长按预览图保存。</p>
+          <div class="ui-card-actions">
+            <button id="posterCloseButton" class="secondary-button" type="button">关闭</button>
+            <button id="posterSaveButton" class="confirm-button" type="button">保存海报</button>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section id="tutorialLayer" class="tutorial-layer is-hidden" aria-live="polite" aria-hidden="true">
+      <div class="tutorial-shade" aria-hidden="true"></div>
+      <article class="tutorial-card">
+        <div class="tutorial-meta">
+          <span id="tutorialProgress">1 / 9</span>
+          <button id="tutorialSkipButton" type="button">跳过引导</button>
+        </div>
+        <h2 id="tutorialTitle">欢迎来到你的鱼缸</h2>
+        <p id="tutorialBody"></p>
+        <div id="tutorialStats" class="tutorial-stats is-hidden"></div>
+        <button id="tutorialPrimaryButton" class="tutorial-primary" type="button">继续</button>
+      </article>
+    </section>
+
+    <section id="errorToast" class="error-toast is-hidden" role="alert"></section>
+  </main>
+
+  <script src="/game/js/cutout-flow.js"></script>
+  <script src="/game/js/webgl-fish-mesh.js"></script>
+  <script src="/game/js/story-template-catalog.js"></script>
+  <script src="/game/js/fixed-event-catalog.js"></script>
+  <script src="/game/js/story-template-registry.js"></script>
+  <script src="/game/js/state-store.js"></script>
+  <script src="/game/js/economy-system.js"></script>
+  <script src="/game/js/relationship-system.js"></script>
+  <script src="/game/js/growth-journey.js"></script>
+  <script src="/game/js/event-director.js"></script>
+  <script src="/game/js/story-agent.js"></script>
+  <script src="/game/js/poster-renderer.js"></script>
+  <script src="/game/js/aquarium-core.js"></script>
+  <script src="/game/js/aquarium-api.js"></script>
+  <script src="/game/js/ui-shell.js"></script>
+  <script src="/game/js/sound-manager.js"></script>
+  <script src="/game/js/tutorial-system.js"></script>
+  <script src="/game/js/app.js"></script>
+</body>
+</html>

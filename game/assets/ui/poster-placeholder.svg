@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1440">
+  <defs>
+    <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#edf3df"/>
+      <stop offset=".25" stop-color="#86c9b4"/>
+      <stop offset="1" stop-color="#176d73"/>
+    </linearGradient>
+  </defs>
+  <rect width="1080" height="1440" fill="#f2efe0"/>
+  <rect x="70" y="180" width="940" height="850" rx="42" fill="url(#water)"/>
+  <g fill="#e9d18e" opacity=".9">
+    <ellipse cx="390" cy="590" rx="120" ry="54"/>
+    <path d="M270 590 170 520l20 70-20 70 100-70Z"/>
+    <circle cx="455" cy="575" r="9" fill="#245e59"/>
+  </g>
+  <text x="70" y="105" fill="#315e55" font-size="42" font-family="sans-serif">忍不住化身一条固执的鱼</text>
+  <text x="70" y="1120" fill="#315e55" font-size="56" font-family="sans-serif">水里发生了一件很小的事</text>
+  <text x="70" y="1200" fill="#657e70" font-size="30" font-family="sans-serif">有些陪伴，安静得像一束水光。</text>
+  <text x="70" y="1340" fill="#8a9988" font-size="24" font-family="sans-serif">MY QUIET TANK · 2026.07.29</text>
+</svg>

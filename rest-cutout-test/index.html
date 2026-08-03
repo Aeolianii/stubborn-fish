@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    >
+    <meta name="color-scheme" content="light">
+    <title>拍摄你想要的物品</title>
+    <link rel="stylesheet" href="/rest-test/styles/main.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="app-header">
+        <div>
+          <p class="eyebrow">AI 创意鱼缸</p>
+          <h1>拍摄你想要的物品</h1>
+          <p class="intro">
+            内容由AI生成，使用时请遵守抖音平台公约
+          </p>
+        </div>
+        <div class="model-badge" aria-label="创作提示">
+          <span>发挥想象</span>
+          <strong>万物皆可入鱼缸</strong>
+        </div>
+      </header>
+
+      <section
+        id="step-capture"
+        class="control-panel step-screen"
+        data-step="1"
+        aria-labelledby="control-title"
+      >
+        <div class="section-heading">
+          <div>
+            <p class="step-label">步骤 1</p>
+            <h2 id="control-title">拍摄或选择一件物品</h2>
+          </div>
+          <span class="cost-tag">AI 智能识别 · 透明剪纸</span>
+        </div>
+
+        <div class="input-row">
+          <label id="choose-image" class="camera-button">
+            <span class="camera-mark" aria-hidden="true"></span>
+            <span>拍摄或选择图片</span>
+            <input
+              id="image-input"
+              class="native-file-input"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              aria-label="拍摄或选择图片"
+            >
+          </label>
+
+          <div class="subject-fields">
+            <label class="description-field">
+              <span>你想带进鱼缸的物品</span>
+              <textarea
+                id="subject-description"
+                maxlength="200"
+                rows="2"
+                placeholder="例如：画面中央的红色玩具鱼"
+              ></textarea>
+            </label>
+
+            <label class="category-field">
+              <span>图片种类</span>
+              <select id="subject-type" required>
+                <option value="" selected disabled>请选择图片种类</option>
+                <option value="person">人物</option>
+                <option value="animal">动物</option>
+                <option value="plant">植物</option>
+                <option value="other">其他</option>
+              </select>
+            </label>
+          </div>
+
+          <button id="generate-cutout" class="primary-button" type="button" disabled>
+              生成透明物品
+          </button>
+        </div>
+
+        <div class="status-row" aria-live="polite">
+          <div id="capture-status-dot" class="status-dot"></div>
+          <p id="capture-status-text">先拍摄或选择一张图片吧。</p>
+        </div>
+      </section>
+
+      <section
+        id="step-generate" hidden
+        class="result-section step-screen"
+        data-step="2"
+        aria-labelledby="result-title"
+      >
+        <div class="section-heading">
+          <div>
+            <p class="step-label">步骤 2</p>
+            <h2 id="result-title">AI 正在生成透明物品</h2>
+          </div>
+          <span id="generation-tag" class="cost-tag">正在施展透明魔法</span>
+        </div>
+
+        <div
+          id="generating-state"
+          class="generating-state"
+          role="status"
+          aria-live="polite"
+        >
+          <div class="ai-loader" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <div>
+            <h3>AI 正在生成，请稍候</h3>
+            <p>正在从照片中取出你选择的物品…</p>
+          </div>
+        </div>
+
+        <div class="status-row generation-status" aria-live="polite">
+          <div id="status-dot" class="status-dot working"></div>
+          <p id="status-text">AI 正在识别你选择的物品…</p>
+          <button id="cancel-task" class="text-button" type="button">
+            取消处理
+          </button>
+        </div>
+
+        <div id="result-content" class="comparison-grid" hidden>
+          <article class="preview-card">
+            <div class="card-title">
+              <span>01</span>
+              <h3>原始照片</h3>
+            </div>
+            <div class="media-stage">
+              <img id="source-preview" alt="用户选择的参考照片" hidden>
+              <p id="source-placeholder">还没有拍摄或选择照片</p>
+            </div>
+          </article>
+
+          <article class="preview-card">
+            <div class="card-title">
+              <span>02</span>
+              <h3>透明物品</h3>
+            </div>
+            <div class="media-stage checker-stage">
+              <canvas id="cutout-result" aria-label="AI 裁剪出的透明物品"></canvas>
+              <p id="result-placeholder">等待 AI 裁剪物品</p>
+            </div>
+          </article>
+        </div>
+
+        <div class="step-actions">
+          <button id="back-to-capture" class="secondary-button" type="button">
+            返回修改
+          </button>
+          <button id="aquarium-preview" class="primary-button" type="button" disabled>
+            放入鱼缸预览
+          </button>
+        </div>
+      </section>
+
+      <section
+        id="step-aquarium" hidden
+        class="aquarium-section step-screen"
+        data-step="3"
+        aria-labelledby="aquarium-title"
+      >
+        <div class="section-heading compact">
+          <div>
+            <p class="step-label">步骤 3</p>
+            <h2 id="aquarium-title">把物品放进鱼缸</h2>
+          </div>
+          <button id="restart-flow" class="secondary-button" type="button">
+            再拍一个
+          </button>
+        </div>
+        <canvas id="aquarium-canvas" aria-label="鱼缸效果预览"></canvas>
+      </section>
+    </main>
+    <script
+      src="/rest-test/js/object-segmentation.js?v=solid-polygon-1"
+    ></script>
+    <script src="/rest-test/js/main.js?v=step-flow-1"></script>
+  </body>
+</html>
